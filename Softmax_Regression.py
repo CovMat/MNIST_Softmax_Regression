@@ -38,7 +38,8 @@ cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2( labels = Y_training,
 cost = tf.reduce_mean( cross_entropy )
 # Note: In practice, You should NOT use the commented 2 lines to compute the cross entropy loss function. Because if logit is large, the exp() will be explosive, and hypothesis will be near zero. Therefore, the logarithm will be nan. 
 # You can only use tf.nn.softmax_cross_entropy_with_logits_v2 to directly compute the cross entropy.
-optimizer = tf.train.GradientDescentOptimizer( learning_rate = 0.003 ).minimize( cost )
+optimizer = tf.train.AdamOptimizer(learning_rate=0.003).minimize(cost)
+#optimizer = tf.train.GradientDescentOptimizer( learning_rate = 0.003 ).minimize( cost )
 
 # transfer label and image data to proper format
 X = np.asarray( training_image_data ).reshape( training_image_num, row_num*col_num  )
@@ -55,7 +56,7 @@ with tf.Session() as sess:
     # initializing of variables
     sess.run( tf.global_variables_initializer() )
     i_iter = 0
-    for epoch in range(10):
+    for epoch in range(20):
         for i in range(batch_num):
             cost_val, _ = sess.run( [ cost, optimizer ], feed_dict = {  \
                                     X_training: X[ i*batch_size : (i+1)*batch_size, : ],\
