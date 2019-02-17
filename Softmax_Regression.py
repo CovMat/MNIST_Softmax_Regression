@@ -45,7 +45,7 @@ optimizer = tf.train.AdamOptimizer(learning_rate=0.003).minimize(cost)
 X = np.asarray( training_image_data ).reshape( training_image_num, row_num*col_num  )
 Y = np.zeros( (training_label_num, classes) )
 for i in range(classes):
-    Y[ : , i ] = ( np.asarray(training_label_data) == (i+1) )
+    Y[ : , i ] = ( np.asarray(training_label_data) == i )
 X_test = np.asarray( test_image_data ).reshape( test_image_num, row_num*col_num  )
 
 #  feed data and run
@@ -58,9 +58,13 @@ with tf.Session() as sess:
     i_iter = 0
     for epoch in range(20):
         for i in range(batch_num):
+            st = i*batch_size
+            ed = (i+1)*batch_size
+            if i == batch_num-1:
+                ed = training_label_num
             cost_val, _ = sess.run( [ cost, optimizer ], feed_dict = {  \
-                                    X_training: X[ i*batch_size : (i+1)*batch_size, : ],\
-                                    Y_training: Y[ i*batch_size : (i+1)*batch_size, : ] } )
+                                    X_training: X[ st:ed, : ],\
+                                    Y_training: Y[ st:ed, : ] } )
             if ( i_iter % 20 == 0 ):
                 print( "step "+str(i_iter)+": cost = "+str(cost_val)+"\n" )
             i_iter +=1
@@ -68,7 +72,7 @@ with tf.Session() as sess:
     # compute the accuracy
     logits_val = sess.run( logits, feed_dict = {X_training: X_test}  )
     max_index = sess.run( tf.argmax(logits_val, axis = 1) )
-    accuracy = sess.run( tf.reduce_mean( tf.cast( (max_index + 1) == test_label_data , dtype=tf.float32 ) ) )
+    accuracy = sess.run( tf.reduce_mean( tf.cast( max_index == test_label_data , dtype=tf.float32 ) ) )
     print( "testing accuracy :"+str(accuracy) )
 
 # plot cost-iter
